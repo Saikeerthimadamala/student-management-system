@@ -1,0 +1,209 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student Management System</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f3f6fa;
+      margin: 0;
+      padding: 30px;
+      color: #243247;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: auto;
+      background: white;
+      padding: 25px;
+      border-radius: 12px;
+      box-shadow: 0 4px 14px #00000012;
+    }
+
+    h1 {
+      color: #2457a7;
+      text-align: center;
+    }
+
+    form {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      margin-bottom: 25px;
+    }
+
+    input, button {
+      padding: 12px;
+      border-radius: 6px;
+      border: 1px solid #ccd5e0;
+      font-size: 15px;
+    }
+
+    button {
+      background: #2457a7;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #173e7e;
+    }
+
+    .delete {
+      background: #c0392b;
+    }
+
+    .delete:hover {
+      background: #922b21;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th, td {
+      padding: 12px;
+      border-bottom: 1px solid #e2e7ee;
+      text-align: left;
+    }
+
+    th {
+      background: #eaf0fa;
+    }
+
+    #message {
+      color: #2457a7;
+      margin-bottom: 12px;
+    }
+
+    @media (max-width: 600px) {
+      body { padding: 10px; }
+      form { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <main class="container">
+    <h1>Student Management System</h1>
+    <p>Add, view, search, and delete student records.</p>
+
+    <form id="studentForm">
+      <input id="studentId" placeholder="Student ID" required>
+      <input id="name" placeholder="Full Name" required>
+      <input id="course" placeholder="Course" required>
+      <input id="email" type="email" placeholder="Email" required>
+      <button type="submit">Add Student</button>
+    </form>
+
+    <input
+      id="search"
+      placeholder="Search by student name or ID"
+      style="width: 95%; margin-bottom: 15px;"
+    >
+
+    <p id="message" role="status"></p>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Course</th>
+            <th>Email</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="studentList"></tbody>
+      </table>
+    </div>
+  </main>
+
+  <script>
+    const form = document.getElementById("studentForm");
+    const studentList = document.getElementById("studentList");
+    const search = document.getElementById("search");
+    const message = document.getElementById("message");
+
+    let students = [];
+
+    function renderStudents() {
+      const query = search.value.trim().toLowerCase();
+      studentList.replaceChildren();
+
+      const filtered = students.filter(student =>
+        student.id.toLowerCase().includes(query) ||
+        student.name.toLowerCase().includes(query)
+      );
+
+      filtered.forEach(student => {
+        const row = document.createElement("tr");
+
+        [student.id, student.name, student.course, student.email]
+          .forEach(value => {
+            const cell = document.createElement("td");
+            cell.textContent = value;
+            row.appendChild(cell);
+          });
+
+        const actionCell = document.createElement("td");
+        const deleteButton = document.createElement("button");
+        deleteButton.textContent = "Delete";
+        deleteButton.className = "delete";
+
+        deleteButton.addEventListener("click", () => {
+          students = students.filter(item => item.id !== student.id);
+          message.textContent = "Student deleted successfully.";
+          renderStudents();
+        });
+
+        actionCell.appendChild(deleteButton);
+        row.appendChild(actionCell);
+        studentList.appendChild(row);
+      });
+
+      if (filtered.length === 0) {
+        const row = document.createElement("tr");
+        const cell = document.createElement("td");
+        cell.colSpan = 5;
+        cell.textContent = "No students found.";
+        row.appendChild(cell);
+        studentList.appendChild(row);
+      }
+    }
+
+    form.addEventListener("submit", event => {
+      event.preventDefault();
+
+      const student = {
+        id: document.getElementById("studentId").value.trim(),
+        name: document.getElementById("name").value.trim(),
+        course: document.getElementById("course").value.trim(),
+        email: document.getElementById("email").value.trim()
+      };
+
+      if (students.some(item => item.id === student.id)) {
+        message.textContent = "Student ID already exists.";
+        return;
+      }
+
+      students.push(student);
+      form.reset();
+      message.textContent = "Student added successfully.";
+      renderStudents();
+    });
+
+    search.addEventListener("input", renderStudents);
+    renderStudents();
+  </script>
+</body>
+</html>
